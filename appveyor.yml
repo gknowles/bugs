@@ -1,0 +1,50 @@
+# Copyright Glen Knowles 2016 - 2017.
+# Distributed under the Boost Software License, Version 1.0.
+version: 0.1.{build}
+image: 
+  - Visual Studio 2015
+  - Visual Studio 2017
+
+platform:
+  - Win32
+  - x64
+configuration:
+  - Debug
+  - Release
+
+build_script:
+  # hack to stop sea of Xamarin (which isn't being used at all) warnings
+  # during cmake configuration
+  - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
+
+  - md build 
+  - cd build
+  - ps: |
+      if ($env:platform -eq "x64") {
+        if ($env:APPVEYOR_JOB_NAME.contains("Image: Visual Studio 2015")) {
+          Invoke-Expression 'cmake -G "Visual Studio 14 2015 Win64" ..'
+        } else {
+          Invoke-Expression 'cmake -G "Visual Studio 15 2017 Win64" ..'
+        }
+      } else {
+        if ($env:APPVEYOR_JOB_NAME.contains("Image: Visual Studio 2015")) {
+          Invoke-Expression 'cmake -G "Visual Studio 14 2015" ..'
+        } else {
+          Invoke-Expression 'cmake -G "Visual Studio 15 2017" ..'
+        }
+      }
+  - cmake . -DCMAKE_BUILD_TYPE=%configuration% 
+        -DCMAKE_INSTALL_PREFIX=publish 
+        -DINSTALL_LIBS:BOOL=ON
+  - cmake --build . --target install --config %configuration%
+  - cd publish
+  - 7z a dimcli-latest.zip include lib
+  - cd ..\..
+
+artifacts:
+  - path: build\publish\dimcli-latest.zip
+    name: dimcli
+    type: zip
+
+test_script:
+  - bin\cli

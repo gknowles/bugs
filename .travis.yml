@@ -1,0 +1,81 @@
+# Copyright Glen Knowles 2016 - 2017.
+# Distributed under the Boost Software License, Version 1.0.
+language: cpp
+sudo: false
+dist: trusty
+
+addons:
+  apt:
+    packages: &packages
+      - g++-6
+      - g++-7
+      - clang-3.6
+      - clang-3.9
+      - clang-4.0
+    sources: &sources
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.6
+      - llvm-toolchain-precise-3.9
+      - llvm-toolchain-trusty-4.0
+
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/deps/cmake
+
+# Why must we work so hard to get a recent cmake?
+install:
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      if [[ -z "$(ls -A ${DEPS_DIR}/cmake/bin)" ]]; then
+        CMAKE_URL="http://www.cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
+        mkdir -p cmake && travis_retry wget --no-check-certificate --quiet -O - \
+            ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+      fi
+      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+    else
+      if ! brew ls --version cmake &>/dev/null; then brew install cmake; fi
+    fi
+  - cd ${TRAVIS_BUILD_DIR}
+
+matrix:
+  include:
+    - env: CXX_NAME=g++-6 CC_NAME=gcc-6
+      addons:
+        apt:
+          packages: ['g++-6']
+          sources: *sources
+    - env: CXX_NAME=g++-7 CC_NAME=gcc-7
+      addons:
+        apt:
+          packages: ['g++-7']
+          sources: *sources
+    # uses experimental/filesystem from g++-6 package... :/
+    - env: CXX_NAME=clang++-3.6 CC_NAME=clang-3.6
+      addons:
+        apt:
+          packages: ['clang-3.6', 'g++-6'] 
+          sources: *sources
+    - env: CXX_NAME=clang++-3.9 CC_NAME=clang-3.9
+      addons:
+        apt:
+          packages: ['clang-3.9', 'g++-6']
+          sources: *sources
+    - env: CXX_NAME=clang++-4.0 CC_NAME=clang-4.0
+      addons:
+        apt:
+          packages: ['clang-4.0', 'g++-6']
+          sources: *sources
+
+script:
+  - export CXX=${CXX_NAME} CC=${CC_NAME}
+  - mkdir -p build && cd build
+  - cmake ..
+  - cmake --build .
+  - ../bin/cli
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change

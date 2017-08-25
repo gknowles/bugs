@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\jects\bugs\tests\c4102\c4102.cpp">
+      <Filter> </Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\jects\bugs\CMakeLists.txt">
+      <Filter> </Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include=" ">
+      <UniqueIdentifier>{3F17249C-BEBB-3F9C-B708-224D6409F4E9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
