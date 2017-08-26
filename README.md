@@ -12,3 +12,7 @@ Distributed under the Boost Software License, Version 1.0.
 # bugs
 
 C++ compiler bug report test programs
+
+## Visual C++ 2017 Version 15.3.2
+### Bad warnings
+- [c4102 "unreferenced label" when ref hidden by "if constexpr"](tests/c4102/c4102.cpp)
