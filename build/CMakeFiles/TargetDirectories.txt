@@ -1,4 +1,0 @@
-C:/jects/bugs/build/CMakeFiles/about.dir
-C:/jects/bugs/build/CMakeFiles/c4102.dir
-C:/jects/bugs/build/CMakeFiles/ALL_BUILD.dir
-C:/jects/bugs/build/CMakeFiles/ZERO_CHECK.dir
