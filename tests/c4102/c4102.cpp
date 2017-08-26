@@ -3,6 +3,8 @@
 //
 // c4102.cpp - bugs
 //
+// Compile with: Visual C++ 2017 Version 15.3.2
+//
 // When "if constexpr" condition is false the references to goto labels 
 // in the statement block aren't (but should be) considered before reporting
 // "unreferenced label".
@@ -27,8 +29,8 @@ TRUE:
 int main(int, char * []) {
     // Call to test<0>() compiles with improper warning:
     //
-    // c4102.cpp(21): warning C4102: 'TRUE': unreferenced label
-    // c4102.cpp(33): note: see reference to function template instantiation 
+    // c4102.cpp(23): warning C4102: 'TRUE': unreferenced label
+    // c4102.cpp(35): note: see reference to function template instantiation 
     //   'bool test<0>(void)' being compiled
     test<0>();
 
