@@ -10,3 +10,4 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+- Added - msvc, c4102 "unreferenced label" when ref hidden by "if constexpr"
