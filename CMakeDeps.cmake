@@ -6,4 +6,5 @@
 # README.md
 # appveyor.yml
 # configure.bat
-# tests/c4102/c4102.cpp
+# tests/cppcheck-1.81/noExplicitConstructor.cpp
+# tests/msvc2017/c4102.cpp

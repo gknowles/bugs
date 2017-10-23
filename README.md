@@ -13,6 +13,12 @@ Distributed under the Boost Software License, Version 1.0.
 
 C++ compiler bug report test programs
 
+## cppcheck 1.81
+### False positives
+- [Class 'classname' has a constructor with 1 argument that is not explicit.
+  ](tests/cppcheck-1.81/noExplicitConstructor.cpp)
+
 ## Visual C++ 2017 Version 15.3.2
 ### Bad warnings
-- [c4102 "unreferenced label" when ref hidden by "if constexpr"](tests/c4102/c4102.cpp)
+- [c4102 "unreferenced label" when ref hidden by "if constexpr"
+  ](tests/msvc2017/c4102.cpp)
