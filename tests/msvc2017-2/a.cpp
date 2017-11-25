@@ -12,7 +12,3 @@
 #pragma hdrstop
 
 constexpr std::chrono::system_clock::duration kLimit = kMaxTime;
-
-//===========================================================================
-int main(int, char * []) {
-}
