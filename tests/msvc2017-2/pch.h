@@ -5,4 +5,5 @@
 
 #include <chrono>
 
-constexpr auto kMaxTime = std::chrono::system_clock::duration::max();
+constexpr std::chrono::system_clock::duration kMaxTime =
+    std::chrono::system_clock::duration::max();
