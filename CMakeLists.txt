@@ -4,7 +4,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 #
 # Use this one file *unmodified* for all projects that follow the convections.
-# All the careful tweaking is for Visual Studio, but it works on linux with 
+# All the careful tweaking is for Visual Studio, but it works on linux with
 # both gcc and clang (at least well enough to do travis builds :P).
 #
 # Project layout:
@@ -23,17 +23,17 @@
 # Source files are expected to be "*.cpp" and "*.h".
 #
 # Precompiled headers:
-# If a lib, test, or tool has a "pch.h" it should also have a "pch.cpp", and 
-# it's cpp files will (under msvc) have "/Yupch.h" - except pch.cpp which gets 
+# If a lib, test, or tool has a "pch.h" it should also have a "pch.cpp", and
+# it's cpp files will (under msvc) have "/Yupch.h" - except pch.cpp which gets
 # "/Ycpch.h".
 #
 # Building libraries:
-# If a library has no cpp files a non-building custom target is made for it 
+# If a library has no cpp files a non-building custom target is made for it
 # instead of a lib target (good for header only libs).
-# For library builds the ${PROJECT_NAME}_LIB_SOURCE macro is defined, used in 
-# combination with ${PROJECT_NAME}_LIB_DYN_LINK to help mark up the interface 
+# For library builds the ${PROJECT_NAME}_LIB_SOURCE macro is defined, used in
+# combination with ${PROJECT_NAME}_LIB_DYN_LINK to help mark up the interface
 # with the correct dllexport/dllimport attributes.
-# 
+#
 # Testing:
 # CTest will run all tests, and pass them the "--test" argument.
 #
@@ -41,9 +41,9 @@
 # By default nothing is installed. Installation of libs, tools, and tests
 # are enabled using the INSTALL_LIBS, INSTALL_TOOLS, and INSTALL_TESTS options
 # respectively. Install creates the following (vcpkg conventions):
-#   include - subdir for each lib containing all of its headers except those 
+#   include - subdir for each lib containing all of its headers except those
 #             like "*int.h"
-#   include/${PROJECT_NAME}/config.h - if it (and they) exist, the following 
+#   include/${PROJECT_NAME}/config.h - if it (and they) exist, the following
 #           lines are commented/uncommented according to the selected options.
 #       "#define ${PROJECT_NAME}_LIB_DYN_LINK" - BUILD_SHARED_LIBS
 #       "#define ${PROJECT_NAME}_LIB_WINAPI_FAMILY_APP - WINDOWS_STORE
@@ -60,7 +60,7 @@
 # Vendor submodules:
 # add_subdirectory is called for every vendor project directory that has
 # a CMakeLists.txt file. It is expected to be a compatible version of this
-# file, and only it's lib projects will be included in the root solution. 
+# file, and only it's lib projects will be included in the root solution.
 
 cmake_minimum_required (VERSION 3.6)
 option(LINK_STATIC_RUNTIME "Link with static c++ runtime" ON)
@@ -84,7 +84,7 @@ set(tmp "${LINK_STATIC_RUNTIME}")   # not used by gcc or clang builds
 #
 ####
 
-# Compare the new contents with the existing file, if it exists and is the 
+# Compare the new contents with the existing file, if it exists and is the
 # same we don't want to trigger a make by changing its timestamp.
 function(update_file path content)
     set(old_content "")
@@ -97,7 +97,7 @@ function(update_file path content)
 endfunction()
 
 # Creates a file called CMakeDeps.cmake next to the CMakeLists.txt with
-# the list of dependencies in it - this file should be treated as part of 
+# the list of dependencies in it - this file should be treated as part of
 # CMakeLists.txt (source controlled, etc.).
 function(update_deps_file)
     set(deps_file "CMakeDeps.cmake")
@@ -128,7 +128,7 @@ function(write_user_file prjname)
     set(user_file "${CMAKE_CURRENT_BINARY_DIR}/${prjname}.vcxproj.user")
     file(WRITE ${user_file} [=[
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" 
+<Project ToolsVersion="4.0"
         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 ]=])
     foreach(cfgname ${CMAKE_CONFIGURATION_TYPES})
@@ -159,12 +159,12 @@ function(install_archive_pdb tgt dstdir)
         install(FILES "$<TARGET_PDB_FILE:${tgt}>" DESTINATION bin)
     else()
         # Special handling required to get PDBs of static libraries installed.
-        # I would hope that there's a better way to do this, but I don't know 
+        # I would hope that there's a better way to do this, but I don't know
         # what it may be...
         foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
-            install(FILES 
-                "${CMAKE_CURRENT_BINARY_DIR}/${tgt}.dir/${cfg}/${tgt}.pdb" 
-                DESTINATION ${dstdir} 
+            install(FILES
+                "${CMAKE_CURRENT_BINARY_DIR}/${tgt}.dir/${cfg}/${tgt}.pdb"
+                DESTINATION ${dstdir}
                 CONFIGURATIONS ${cfg})
         endforeach()
     endif()
@@ -173,7 +173,7 @@ endfunction()
 function(set_pch tgt srcdir)
     if(MSVC AND EXISTS "${srcdir}/pch.h")
         # use pch.cpp to create precompiled header
-        set_property(SOURCE "${srcdir}/pch.cpp" 
+        set_property(SOURCE "${srcdir}/pch.cpp"
             APPEND PROPERTY COMPILE_FLAGS "/Ycpch.h")
         # use pch.h as precompiled header
         set_property(TARGET ${tgt} APPEND PROPERTY COMPILE_FLAGS "/Yupch.h")
@@ -181,24 +181,23 @@ function(set_pch tgt srcdir)
 endfunction()
 
 function(add_exec_project tgt srcdir)
-    file(GLOB_RECURSE sources 
-        LIST_DIRECTORIES false ${srcdir}/*)
+    file(GLOB_RECURSE sources LIST_DIRECTORIES false ${srcdir}/*)
     list(APPEND deps ${sources})
     set(deps ${deps} PARENT_SCOPE)
     add_executable(${tgt} ${sources})
     set_pch(${tgt} ${srcdir})
-	if(MSVC)
-		set_target_properties(${tgt} PROPERTIES LINK_FLAGS /Debug)
-	endif()
+    if(MSVC)
+        set_target_properties(${tgt} PROPERTIES LINK_FLAGS /Debug)
+    endif()
     foreach(var ${libnames})
         get_filename_component(libname "${var}" NAME)
         target_link_libraries(${tgt} ${libname})
     endforeach()
-	if(CMAKE_COMPILER_IS_GNUCXX)
+    if(CMAKE_COMPILER_IS_GNUCXX)
         # required for #include <experimental/filesystem>
-		target_link_libraries(${tgt} "stdc++fs")
+        target_link_libraries(${tgt} "stdc++fs")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-		target_link_libraries(${tgt} "stdc++fs")
+        target_link_libraries(${tgt} "stdc++fs")
     endif()
     write_user_file(${tgt})
 endfunction()
@@ -229,7 +228,7 @@ function(add_lib_project tgt srcdir)
     set_target_properties(${tgt} PROPERTIES FOLDER libs)
     set_pch(${tgt} ${srcdir})
     if(INSTALL_LIBS)
-        file(GLOB incls LIST_DIRECTORIES false 
+        file(GLOB incls LIST_DIRECTORIES false
             RELATIVE "${srcdir}" "${srcdir}/*.h")
         foreach(var ${incls})
             get_filename_component(name "${var}" NAME)
@@ -261,8 +260,10 @@ endfunction()
 #
 ####
 
-# get name of project from containing directory
+# Get name of project from containing directory. Strip version suffixes like
+# "-1.2.3" from the that vcpkg likes to add when building things.
 get_filename_component(prjname "${CMAKE_CURRENT_SOURCE_DIR}" NAME)
+string(REGEX REPLACE "(-[\.0-9\-]*)$" "" prjname ${prjname})
 project(${prjname})
 string(TOUPPER "${prjname}" DEFINE_PREFIX)
 
@@ -273,19 +274,19 @@ else()
     set(ROOT_PROJECT false)
 endif()
 
-# In order to make a copy of the solution to the source root (where it's 
+# In order to make a copy of the solution to the source root (where it's
 # required to be for the github integration) we need to copy - and tweak - it
-# post generation. But cmake doesn't allow for post generation hooks, so we 
-# launch another instance of cmake and then transform and copy the solution 
+# post generation. But cmake doesn't allow for post generation hooks, so we
+# launch another instance of cmake and then transform and copy the solution
 # file after that instance returns.
 if(MSVC AND ROOT_PROJECT AND NOT RECURSIVE_GENERATE)
     message(STATUS "Recursive generate started")
     execute_process(
-        COMMAND ${CMAKE_COMMAND} 
+        COMMAND ${CMAKE_COMMAND}
             -G "${CMAKE_GENERATOR}"
             -T "${CMAKE_GENERATOR_TOOLSET}"
             -A "${CMAKE_GENERATOR_PLATFORM}"
-            -DRECURSIVE_GENERATE:BOOL=ON 
+            -DRECURSIVE_GENERATE:BOOL=ON
             -DLINK_STATIC_RUNTIME:BOOL=${LINK_STATIC_RUNTIME}
             -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
             -DBUILD_UNICODE:BOOL=${BUILD_UNICODE}
@@ -295,16 +296,16 @@ if(MSVC AND ROOT_PROJECT AND NOT RECURSIVE_GENERATE)
 
     set(sln_binpath ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.sln)
     if(EXISTS ${sln_binpath})
-        # Load solution file from bin-dir and change the relative references 
-        # to project files so that the in memory copy is as if it had been 
+        # Load solution file from bin-dir and change the relative references
+        # to project files so that the in memory copy is as if it had been
         # built in the source dir.
-        file(RELATIVE_PATH prefix 
+        file(RELATIVE_PATH prefix
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}")
         file(READ ${sln_binpath} sln_content)
-        string(REGEX REPLACE 
+        string(REGEX REPLACE
             "\"([^\"]+).vcxproj\""
-            "\"${prefix}/\\1.vcxproj\"" 
+            "\"${prefix}/\\1.vcxproj\""
             sln_content
             "${sln_content}")
 
@@ -314,7 +315,7 @@ if(MSVC AND ROOT_PROJECT AND NOT RECURSIVE_GENERATE)
         update_file("${sln_srcpath}" "${sln_content}")
     endif()
 
-    # Fall through so that (in addition to a duplicate generate :P) any 
+    # Fall through so that (in addition to a duplicate generate :P) any
     # --build or --install gets to run with all the facts.
 endif()
 
@@ -327,31 +328,30 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin)
 
 if(MSVC)
+    # "/EHsc" - exceptions from c++ only (not from structured or "C")
+    # "/GF" - string pooling
+    # "/GR-" (UNUSED) - disable RTTI
+    # "/guard:cf" (UNUSED) - control flow guard
+    # "/nologo" - suppress startup banner and informational messages
+    # "/std:c++latest" - allow constructs still pending standardization
     # "/utf-8" - sets source code character set to utf-8
     # "/W4" - warning level 4
     # "/WX" - treat warnings as errors
-    # "/Zi" - debug info format - defaults to no info
-    # "/std:c++latest" - allow constructs still pending standardization
     # "/Zc:inline" - all inline functions must have definition available
     # "/Zc:rvalueCast" - enforce type conversion rules
     # "/Zc:strictStrings" - disable string literal type conversion to non-const
-    # "/nologo" - suppress startup banner and informational messages
-    # "/GR-" (UNUSED) - disable RTTI
-    # "/EHsc" - exceptions from c++ only (not from structure or "C")
-    # "/GF" - string pooling
-    # "/guard:cf" (UNUSED) - control flow guard
     set(CMAKE_CXX_FLAGS "\
-        /utf-8 /W4 /WX /Zi \
-        /std:c++latest /Zc:inline /Zc:rvalueCast /Zc:strictStrings \
-        /nologo /EHsc /GF")
+        /EHsc /GF /nologo /std:c++latest /utf-8 /W4 /WX \
+        /Zc:inline /Zc:rvalueCast /Zc:strictStrings")
     if(NOT MSVC_VERSION LESS 1910)
-        # /permissive-  // reject non-conforming backward compatibilitisms
+        # /permissive-  // reject non-conforming backward compatibility-isms
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
     endif()
 
     # "/Od" - disables optimization
     # "/RTC1" - runtime checks (stack frame over/under run and uninit var use)
-    set(CMAKE_CXX_FLAGS_DEBUG "/Od /RTC1")
+    # "/ZI" - debug with edit and continue (disables some optimizations)
+    set(CMAKE_CXX_FLAGS_DEBUG "/Od /RTC1 /ZI")
     if(LINK_STATIC_RUNTIME)
         # "/MTd" - multithread debug static runtime
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
@@ -359,9 +359,10 @@ if(MSVC)
         # "/MDd" - multithread debug dll runtime
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
     endif()
-    
+
     # "/O2" - maximize speed
-    set(CMAKE_CXX_FLAGS_RELEASE "/DNDEBUG /O2")
+    # "/Zi" - debug info format (not present would be no info)
+    set(CMAKE_CXX_FLAGS_RELEASE "/DNDEBUG /O2 /Zi")
     if(LINK_STATIC_RUNTIME)
         # "/MT" - multithread release static runtime
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
@@ -394,8 +395,8 @@ foreach(var ${config_defines})
     add_definitions(/D${var})
 endforeach()
 
-# Setting source_group to a single space is weird and relies on Visual Studio 
-# treating it as no group, ideally we'd set it to the empty string to mean 
+# Setting source_group to a single space is weird and relies on Visual Studio
+# treating it as no group, ideally we'd set it to the empty string to mean
 # no group, but - just for regexs (bug?) - that causes cmake to use defaults.
 source_group(" " REGULAR_EXPRESSION ".*")
 source_group("docs" REGULAR_EXPRESSION "docs/.*")
@@ -439,7 +440,7 @@ if(NOT ROOT_PROJECT)
 endif()
 
 # file targets
-add_file_project(about 
+add_file_project(about
     LICENSE
     .clang-format
     .travis.yml
@@ -447,7 +448,7 @@ add_file_project(about
     *.md
     configure.bat
     docs/*)
-add_file_project(conf 
+add_file_project(conf
     bin/conf/*)
 
 # tool targets
@@ -469,7 +470,7 @@ foreach(var ${allnames})
     if(IS_DIRECTORY "${var}")
         get_filename_component(prjname "${var}" NAME)
         add_exec_project(${prjname} "${var}")
-        target_compile_definitions(${prjname} 
+        target_compile_definitions(${prjname}
             PRIVATE ${DEFINE_PREFIX}_LIB_KEEP_MACROS)
         set_target_properties(${prjname} PROPERTIES FOLDER tests)
         add_test(NAME ${prjname} COMMAND ${prjname} --test)
@@ -488,14 +489,14 @@ get_filename_component(path ${cfgname} ABSOLUTE)
 if(EXISTS "${path}")
     file(READ "${path}" content)
     foreach(val ${config_defines})
-        string(REGEX REPLACE 
-            "\n//#define ${val}" "\n#define ${val}" 
+        string(REGEX REPLACE
+            "\n//#define ${val}" "\n#define ${val}"
             content "${content}")
     endforeach()
     update_file("${CMAKE_CURRENT_BINARY_DIR}/${cfgname}" "${content}")
 
     if(INSTALL_LIBS)
-        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${cfgname}" 
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${cfgname}"
             DESTINATION include/${PROJECT_NAME})
     endif()
 endif()

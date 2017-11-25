@@ -13,6 +13,11 @@ Distributed under the Boost Software License, Version 1.0.
 
 C++ compiler bug report test programs
 
+## Visual C++ 2017 Version 15.4.3
+### Internal compiler error
+- [Assigning constexpr duration from a constexpr duration defined in
+  precompiled header](tests/msvc2017-2)
+
 ## cppcheck 1.81
 ### False positives
 - [Class 'classname' has a constructor with 1 argument that is not explicit.

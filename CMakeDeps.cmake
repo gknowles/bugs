@@ -7,4 +7,7 @@
 # appveyor.yml
 # configure.bat
 # tests/cppcheck-1.81/noExplicitConstructor.cpp
+# tests/msvc2017-2/a.cpp
+# tests/msvc2017-2/pch.cpp
+# tests/msvc2017-2/pch.h
 # tests/msvc2017/c4102.cpp
