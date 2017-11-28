@@ -13,10 +13,13 @@ Distributed under the Boost Software License, Version 1.0.
 
 C++ compiler bug report test programs
 
-## Visual C++ 2017 Version 15.4.3
+## Visual C++ 2017 Version 15.4.5
 ### Internal compiler error
 - [Assigning constexpr duration from a constexpr duration defined in
   precompiled header](tests/msvc2017-2)
+### Intellisense error
+- [Intellisense errors defining and using forward declared member enum.
+  ](tests/msvc2017-3/a.cpp)
 
 ## cppcheck 1.81
 ### False positives
