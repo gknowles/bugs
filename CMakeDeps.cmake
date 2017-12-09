@@ -11,4 +11,5 @@
 # tests/msvc2017-2/pch.cpp
 # tests/msvc2017-2/pch.h
 # tests/msvc2017-3/a.cpp
+# tests/msvc2017-4/a.cpp
 # tests/msvc2017/c4102.cpp

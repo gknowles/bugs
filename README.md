@@ -13,6 +13,11 @@ Distributed under the Boost Software License, Version 1.0.
 
 C++ compiler bug report test programs
 
+## Visual C++ 2017 Version 15.5.1
+### Bad code generation
+- [Release build generates code that tries to read an invalid memory
+  address](tests/msvc2017-4/a.cpp)
+
 ## Visual C++ 2017 Version 15.4.5
 ### Internal compiler error
 - [Assigning constexpr duration from a constexpr duration defined in
