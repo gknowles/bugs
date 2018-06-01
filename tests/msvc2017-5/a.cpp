@@ -17,11 +17,12 @@
 constexpr int table_value() {
     const unsigned kTable[] = { 1, 2 };
 #if FAILING
-    // this fails with the C2131 error shown above
+    // 15.7.2 - works
+    // 15.7.3 - fails with C2131 error
     int r = kTable[0];
     return r;
 #else
-    // this works
+    // works in both 2017 15.7.2 and 15.7.3
     return kTable[0]
 #endif
 }
