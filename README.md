@@ -1,5 +1,5 @@
 ﻿<!--
-Copyright Glen Knowles 2017.
+Copyright Glen Knowles 2017 - 2018.
 Distributed under the Boost Software License, Version 1.0.
 -->
 
@@ -12,6 +12,11 @@ Distributed under the Boost Software License, Version 1.0.
 # bugs
 
 C++ compiler bug report test programs
+
+## Visual C++ 2017 Version 15.7.3
+### Compile failure
+- [expression did not evaluate to a constant
+  ](tests/msvc2017-5/a.cpp)
 
 ## Visual C++ 2017 Version 15.5.1
 ### Bad code generation
