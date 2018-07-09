@@ -9,6 +9,7 @@ C++ compiler bug report test programs
 
 ## Visual C++ 2017
 ### Version 15.7.4
+#### C RunTime library
 - [Handle ownership conflict between FreeConsole and _close
   ](tests/msvc2017-6/a.cpp)
 
