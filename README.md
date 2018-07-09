@@ -8,9 +8,13 @@ Distributed under the Boost Software License, Version 1.0.
 C++ compiler bug report test programs
 
 ## Visual C++ 2017
+### Version 15.7.4
+- [Handle ownership conflict between FreeConsole and _close
+  ](tests/msvc2017-6/a.cpp)
+
 ### Version 15.7.3
 #### Compile failure
-- [expression did not evaluate to a constant
+- [Expression did not evaluate to a constant
   ](tests/msvc2017-5/a.cpp)
 
 ### Version 15.5.1
