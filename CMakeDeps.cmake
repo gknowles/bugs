@@ -14,4 +14,5 @@
 # tests/msvc2017-4/a.cpp
 # tests/msvc2017-5/a.cpp
 # tests/msvc2017-6/a.cpp
+# tests/msvc2017-7/a.cpp
 # tests/msvc2017/c4102.cpp
