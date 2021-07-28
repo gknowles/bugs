@@ -1,5 +1,5 @@
 ﻿<!--
-Copyright Glen Knowles 2017 - 2018.
+Copyright Glen Knowles 2017 - 2021.
 Distributed under the Boost Software License, Version 1.0.
 -->
 
@@ -7,7 +7,18 @@ Distributed under the Boost Software License, Version 1.0.
 
 C++ compiler bug report test programs
 
+## Viaual C++ 2019
+### Version 16.10.4
+#### Compile failure
+- [Unable to define member enum of template class outside of the class
+  ](testlibs/msvc2019/a.cpp)
+
 ## Visual C++ 2017
+### Version 15.9.2
+#### Bad warnings
+- [Warning converting from standard NAN macro to double
+  ](testlibs/msvc2017-7/a.cpp)
+
 ### Version 15.7.4
 #### C RunTime library
 - [Handle ownership conflict between FreeConsole and _close
@@ -26,10 +37,10 @@ C++ compiler bug report test programs
 ### Version 15.4.5
 #### Internal compiler error - FIXED in 15.7
 - [Assigning constexpr duration from a constexpr duration defined in
-  precompiled header](tests/msvc2017-2)
+  precompiled header](testlibs/msvc2017-2)
 #### Intellisense error
 - [Intellisense errors defining and using forward declared member enum.
-  ](tests/msvc2017-3/a.cpp)
+  ](testlibs/msvc2017-3/a.cpp)
 
 ### Version 15.3.2
 #### Bad warnings
@@ -40,5 +51,5 @@ C++ compiler bug report test programs
 ## cppcheck 1.81
 ### False positives
 - [Class 'classname' has a constructor with 1 argument that is not explicit.
-  ](tests/cppcheck-1.81/noExplicitConstructor.cpp)
+  ](testlibs/cppcheck-1.81/noExplicitConstructor.cpp)
 
