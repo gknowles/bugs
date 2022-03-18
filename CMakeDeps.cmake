@@ -14,6 +14,7 @@
 # testlibs/msvc2017-3/a.cpp
 # testlibs/msvc2017-7/a.cpp
 # testlibs/msvc2019/a.cpp
+# testlibs/msvc2022/a.cpp
 # tests/msvc2017-4/a.cpp
 # tests/msvc2017-5/a.cpp
 # tests/msvc2017-6/a.cpp
