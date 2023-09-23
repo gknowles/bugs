@@ -1,11 +1,21 @@
 ﻿<!--
-Copyright Glen Knowles 2017 - 2021.
+Copyright Glen Knowles 2017 - 2023.
 Distributed under the Boost Software License, Version 1.0.
 -->
 
 # bugs
 
 C++ compiler bug report test programs
+
+## Viaual C++ 2022
+### Version 17.7.4
+### C++ RunTime library
+- [Extracting float from stringstream may give wrong result
+  ](tests/msvc2022-2/a.cpp)
+
+### Version 17.1.1 - FIXED in 17.2
+#### Internal compiler error
+- [Using offsetof in template requires clause](testlibs/msvc2022/a.cpp)
 
 ## Viaual C++ 2019
 ### Version 16.10.4

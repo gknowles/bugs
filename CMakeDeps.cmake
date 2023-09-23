@@ -19,3 +19,4 @@
 # tests/msvc2017-5/a.cpp
 # tests/msvc2017-6/a.cpp
 # tests/msvc2017/c4102.cpp
+# tests/msvc2022-2/a.cpp
