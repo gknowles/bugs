@@ -6,6 +6,7 @@
 # README.md
 # WarningsNotAsErrors.user.props
 # appveyor.yml
+# conf/cmtupd.xml
 # configure.bat
 # testlibs/cppcheck-1.81/noExplicitConstructor.cpp
 # testlibs/msvc2017-2/a.cpp
