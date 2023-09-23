@@ -1,4 +1,4 @@
-# Copyright Glen Knowles 2016 - 2022.
+# Copyright Glen Knowles 2016 - 2023.
 # Distributed under the Boost Software License, Version 1.0.
 #
 # CMakeLists.txt - general project generator
@@ -13,7 +13,7 @@
 #   /<project_name>/CMakeDeps.cmake - made by this file (source controlled)
 #   /<project_name>/*.user.props - properties included in MSVC projects
 #   /<project_name>/conf/**
-#   /<project_name>/conf/**/<basename>.sample - causes .../<basename> to be 
+#   /<project_name>/conf/**/<basename>.sample - causes .../<basename> to be
 #       excluded from dependencies
 #   /<project_name>/docs/**
 #   /<project_name>/libs/<lib_project_name>/**
@@ -24,6 +24,7 @@
 #   /<project_name>/tools/<tool_project_name>/**
 #   /<project_name>/vendor/<vendor_project_name>/ - only if
 #       /<project_name>/vendor/<vendor_project_name>/CMakeLists.txt exists
+#   /<project_name>/web/** - web UI for server projects (html, images, etc)
 #
 # Code files:
 # Source files are expected to be "*.cpp" and "*.h".
@@ -138,12 +139,9 @@ if(MSVC)
     # "/Zc:inline" - all inline functions must have definition available
     # "/Zc:rvalueCast" - enforce type conversion rules
     # "/Zc:strictStrings" - disable string literal type conversion to non-const
-    # "/Fa[dir]" - assembly listing location, the CMake default puts it right
-    #    under the solution tree, and we want it in under /build
     set(CMAKE_CXX_FLAGS "\
         /EHsc /GF /nologo /std:c++latest /utf-8 /W4 /WX \
-        /Zc:inline /Zc:rvalueCast /Zc:strictStrings \
-        /Fa$(IntDir)")
+        /Zc:inline /Zc:rvalueCast /Zc:strictStrings")
     if(NOT MSVC_VERSION LESS 1910)
         # /permissive-  // reject non-conforming backward compatibility-isms
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
@@ -179,7 +177,7 @@ if(MSVC)
         # "/MD" - multithread release dll runtime
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
     endif()
-elseif(CMAKE_COMPILER_IS_GNUCXX)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
     elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11")
@@ -187,7 +185,7 @@ elseif(CMAKE_COMPILER_IS_GNUCXX)
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2b")
     endif()
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "7")
         # The libstdc++6 library, as of 2021-06-15, no longer works with
         # Clang++-6 in c++2a mode, failing with a reference to the unknown
@@ -200,8 +198,8 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL Clang)
     endif()
 endif()
 if(BUILD_COVERAGE)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL GNU
-            OR CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+            OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
             -fprofile-arcs -ftest-coverage -fsanitize=address")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
@@ -233,6 +231,7 @@ endforeach()
 source_group(" " REGULAR_EXPRESSION ".*")
 source_group("ci" REGULAR_EXPRESSION "\.github/.*\.yml")
 source_group("ci" FILES appveyor.yml codecov.yml .travis.yml)
+source_group("vendor" REGULAR_EXPRESSION "web/(.*/)+vendor/.*")
 
 if(ROOT_PROJECT)
     include_directories(libs)
@@ -269,7 +268,7 @@ endif()
 #
 #   Because function definitions are global the ones defined for use in this
 #   file (to generate local projects) are defined after all vendor subprojects
-#   have been included, otherwise they could be replaced by same named 
+#   have been included, otherwise they could be replaced by same named
 #   functions defined by the vendor cmake scripts.
 #
 ####
@@ -386,17 +385,17 @@ endfunction()
 
 function(install_archive_pdb tgt dstdir)
     if(NOT MSVC)
-        # do nothing
+        # Do nothing
     elseif(BUILD_SHARED_LIBS)
         install(FILES "$<TARGET_PDB_FILE:${tgt}>" DESTINATION bin)
     else()
         # Special handling required to get PDBs of static libraries installed.
         # I would hope that there's a better way to do this, but I don't know
         # what it may be...
-        if(MSVC_VERSION LESS 1920)
-            set(src "${CMAKE_CURRENT_BINARY_DIR}/${tgt}.dir")
-        else()
+        if(MSVC_VERSION GREATER_EQUAL 1920 AND MSVC_VERSION LESS_EQUAL 1927)
             set(src "${CMAKE_CURRENT_BINARY_DIR}")
+        else()
+            set(src "${CMAKE_CURRENT_BINARY_DIR}/${tgt}.dir")
         endif()
         foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
             install(
@@ -407,14 +406,36 @@ function(install_archive_pdb tgt dstdir)
     endif()
 endfunction()
 
-function(set_pch tgt srcdir)
-    if(MSVC AND EXISTS "${srcdir}/pch.h")
-        # use pch.cpp to create precompiled header
-        set_property(SOURCE "${srcdir}/pch.cpp"
-            APPEND PROPERTY COMPILE_FLAGS "/Ycpch.h")
-        # use pch.h as precompiled header
-        set_property(TARGET ${tgt} APPEND PROPERTY COMPILE_FLAGS "/Yupch.h")
+function(set_pch tgt)
+    if (NOT MSVC)
+        return()
     endif()
+    set(sources ${ARGN})
+    foreach(var ${sources})
+        get_filename_component(name "${var}" NAME)
+        if(name STREQUAL "pch.h")
+            set(found TRUE)
+            break()
+        endif()
+    endforeach()
+    if(NOT found)
+        return()
+    endif()
+    foreach(var ${sources})
+        get_filename_component(ext "${var}" EXT)
+        if(ext STREQUAL ".cpp")
+            get_filename_component(basename "${var}" NAME_WLE)
+            if(basename STREQUAL "pch")
+                # Use pch.cpp to create precompiled header.
+                set_property(SOURCE "${var}"
+                    APPEND PROPERTY COMPILE_FLAGS "/Ycpch.h")
+            else()
+                # Use pch.h as precompiled header.
+                set_property(SOURCE ${var}
+                    APPEND PROPERTY COMPILE_FLAGS "/Yupch.h")
+            endif()
+        endif()
+    endforeach()
 endfunction()
 
 function(add_exec_project tgt srcdir)
@@ -423,7 +444,7 @@ function(add_exec_project tgt srcdir)
     list(APPEND deps ${sources})
     set(deps ${deps} PARENT_SCOPE)
     add_executable(${tgt} ${sources})
-    set_pch(${tgt} ${srcdir})
+    set_pch(${tgt} ${sources})
     if(MSVC)
         set_target_properties(${tgt} PROPERTIES LINK_FLAGS /Debug)
     endif()
@@ -431,9 +452,9 @@ function(add_exec_project tgt srcdir)
         get_filename_component(libname "${var}" NAME)
         target_link_libraries(${tgt} ${libname})
     endforeach()
-    if(CMAKE_COMPILER_IS_GNUCXX 
+    if(CMAKE_COMPILER_IS_GNUCXX
             AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9")
-        # required for #include <experimental/filesystem>
+        # Required for #include <experimental/filesystem>.
         target_link_libraries(${tgt} "stdc++fs")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL Clang
             AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9")
@@ -467,7 +488,7 @@ function(add_lib_project tgt srcdir)
         set_target_properties(${tgt} PROPERTIES EXCLUDE_FROM_ALL false)
     endif()
     set_target_properties(${tgt} PROPERTIES FOLDER libs)
-    set_pch(${tgt} ${srcdir})
+    set_pch(${tgt} ${sources})
     if(INSTALL_LIBS)
         file(GLOB incls LIST_DIRECTORIES false
             RELATIVE "${srcdir}" "${srcdir}/*.h")
@@ -497,7 +518,7 @@ endfunction()
 
 #############################################################################
 #
-#   Local projects
+#   Local projects for import
 #
 ####
 
@@ -513,11 +534,28 @@ foreach(var ${allnames})
     endif()
 endforeach()
 
+# web file targets
+file(GLOB_RECURSE sources web/*)
+if(sources)
+    set(prjname web)
+    if (NOT ROOT_PROJECT)
+        set(prjname web-${PROJECT_NAME})
+    endif()
+    add_file_project(${prjname} ${sources})
+endif()
+
 if(NOT ROOT_PROJECT)
     set(deps ${deps} PARENT_SCOPE)
     set(libnames ${libnames} PARENT_SCOPE)
     return()
 endif()
+
+
+#############################################################################
+#
+#   Local projects (root only)
+#
+####
 
 # file targets
 file(GLOB sources
@@ -535,12 +573,10 @@ list(APPEND sources ${allnames})
 if(sources)
     add_file_project(about ${sources})
 endif()
-
 file(GLOB_RECURSE sources conf/*)
 if(sources)
     add_file_project(conf ${sources})
 endif()
-
 file(GLOB_RECURSE sources docs/*)
 if(sources)
     add_file_project(docs ${sources})
@@ -562,21 +598,21 @@ endforeach()
 # test targets
 if(BUILD_TESTING)
     enable_testing()
-endif()
-file(GLOB allnames tests/*)
-foreach(var ${allnames})
-    if(IS_DIRECTORY "${var}")
-        get_filename_component(prjname "${var}" NAME)
-        add_exec_project(${prjname} "${var}")
-        target_compile_definitions(${prjname}
-            PRIVATE ${DEFINE_PREFIX}_LIB_KEEP_MACROS)
-        set_target_properties(${prjname} PROPERTIES FOLDER tests)
-        add_test(NAME ${prjname} COMMAND ${prjname} --test)
-        if(INSTALL_TESTS)
-            install(TARGETS ${prjname} RUNTIME DESTINATION bin)
+    file(GLOB allnames tests/*)
+    foreach(var ${allnames})
+        if(IS_DIRECTORY "${var}")
+            get_filename_component(prjname "${var}" NAME)
+            add_exec_project(${prjname} "${var}")
+            target_compile_definitions(${prjname}
+                PRIVATE ${DEFINE_PREFIX}_LIB_KEEP_MACROS)
+            set_target_properties(${prjname} PROPERTIES FOLDER tests)
+            add_test(NAME ${prjname} COMMAND ${prjname} --test)
+            if(INSTALL_TESTS)
+                install(TARGETS ${prjname} RUNTIME DESTINATION bin)
+            endif()
         endif()
-    endif()
-endforeach()
+    endforeach()
+endif()
 
 # test lib targets - use for compile only tests, never linked
 file(GLOB allnames testlibs/*)
@@ -587,6 +623,13 @@ foreach(var ${allnames})
         set_target_properties(${prjname} PROPERTIES FOLDER testlibs)
     endif()
 endforeach()
+
+
+#############################################################################
+#
+#   Miscellaneous (root only)
+#
+####
 
 # update deps file
 update_deps_file(${deps})
@@ -609,7 +652,7 @@ if(EXISTS "${path}")
     endif()
 endif()
 
-# Add settings for predefined cmake targets
+# Add settings for predefined cmake targets.
 foreach(tgt ALL_BUILD PACKAGE ZERO_CHECK INSTALL RUN_TESTS)
     write_user_file("${tgt}" "props")
 endforeach()
