@@ -1,5 +1,5 @@
 ﻿<!--
-Copyright Glen Knowles 2023.
+Copyright Glen Knowles 2023 - 2025.
 Distributed under the Boost Software License, Version 1.0.
 
 cmtupd config file
@@ -18,22 +18,36 @@ https://github.com/gknowles/dimapp/tree/master/tools/cmtupd
       <File regex=".*\.cmake"/>
       <File regex=".*\.yaml"/>
       <File regex=".*\.yml"/>
+      <File regex=".*\.rb"/>
       <Exclude regex="CMakeDeps\.cmake"/>
       <Var name="Prefix" value="# "/>
     </Group>
     <Group>
+      <File regex=".*\.cpp"/>
+      <File regex=".*\.h"/>
+      <Exclude regex=".*\.g\.cpp"/>
+      <Exclude regex=".*\.g\.h"/>
+      <Var name="Prefix" value="// "/>
+    </Group>
+    <Group>
+      <File regex=".*\.css"/>
+      <File regex=".*\.html"/>
+      <File regex=".*\.js"/>
+      <Exclude regex=".*\.g\.js"/>
+      <Exclude regex="web/srv/vendor/.*"/>
+      <Exclude regex="site/vendor/.*"/>
       <File regex=".*\.adoc"/>
       <File regex=".*\.md"/>
       <File regex=".*\.natvis"/> <!-- xml -->
       <File regex=".*\.xml"/>
       <File regex=".*\.xml\.sample"/>
       <File regex=".*\.xsd"/>
+      <Exclude regex="tools/.*/schema\.xsd"/>
       <Var name="Prefix" value=""/>
     </Group>
     <Group>
-      <File regex=".*\.cpp"/>
-      <File regex=".*\.h"/>
-      <Var name="Prefix" value="// "/>
+      <File regex=".*\.rst"/>
+      <Var name="Prefix" value=".. "/>
     </Group>
     <Group>
       <File regex=".*\.abnf"/>
